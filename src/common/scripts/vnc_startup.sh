@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 ### every exit != 0 fails the script
 set -e
 
@@ -83,10 +83,10 @@ chmod 600 $PASSWD_PATH
 
 
 ## start vncserver and noVNC webclient
-echo -e "\n------------------ start noVNC  ----------------------------"
-if [[ $DEBUG == true ]]; then echo "$NO_VNC_HOME/utils/launch.sh --vnc localhost:$VNC_PORT --listen $NO_VNC_PORT"; fi
-$NO_VNC_HOME/utils/launch.sh --vnc localhost:$VNC_PORT --listen $NO_VNC_PORT &> $STARTUPDIR/no_vnc_startup.log &
-PID_SUB=$!
+#echo -e "\n------------------ start noVNC  ----------------------------"
+#if [[ $DEBUG == true ]]; then echo "$NO_VNC_HOME/utils/launch.sh --vnc localhost:$VNC_PORT --listen $NO_VNC_PORT"; fi
+#$NO_VNC_HOME/utils/launch.sh --vnc localhost:$VNC_PORT --listen $NO_VNC_PORT &> $STARTUPDIR/no_vnc_startup.log &
+#PID_SUB=$!
 
 echo -e "\n------------------ start VNC server ------------------------"
 echo "remove old vnc locks to be a reattachable container"
@@ -97,15 +97,18 @@ vncserver -kill $DISPLAY &> $STARTUPDIR/vnc_startup.log \
 echo -e "start vncserver with param: VNC_COL_DEPTH=$VNC_COL_DEPTH, VNC_RESOLUTION=$VNC_RESOLUTION\n..."
 if [[ $DEBUG == true ]]; then echo "vncserver $DISPLAY -depth $VNC_COL_DEPTH -geometry $VNC_RESOLUTION"; fi
 vncserver $DISPLAY -depth $VNC_COL_DEPTH -geometry $VNC_RESOLUTION &> $STARTUPDIR/no_vnc_startup.log
+#sleep 5
+ps -ef | grep -i vnc
+PID_SUB=`pidof Xtigervnc`
 echo -e "start window manager\n..."
 $HOME/wm_startup.sh &> $STARTUPDIR/wm_startup.log
 
 ## log connect options
 echo -e "\n\n------------------ VNC environment started ------------------"
 echo -e "\nVNCSERVER started on DISPLAY= $DISPLAY \n\t=> connect via VNC viewer with $VNC_IP:$VNC_PORT"
-echo -e "\nnoVNC HTML client started:\n\t=> connect via http://$VNC_IP:$NO_VNC_PORT/?password=...\n"
+#echo -e "\nnoVNC HTML client started:\n\t=> connect via http://$VNC_IP:$NO_VNC_PORT/?password=...\n"
 
-
+DEBUG=true
 if [[ $DEBUG == true ]] || [[ $1 =~ -t|--tail-log ]]; then
     echo -e "\n------------------ $HOME/.vnc/*$DISPLAY.log ------------------"
     # if option `-t` or `--tail-log` block the execution and tail the VNC log
